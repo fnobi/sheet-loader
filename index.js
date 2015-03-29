@@ -3,7 +3,7 @@ var read = require('read');
 var async = require('async');
 var GoogleSpreadsheet = require('google-spreadsheet');
 
-var SheetLoader = function (opts, callback) {
+var SheetLoader = function (opts) {
     opts = opts || {};
 
     this.sheetKey = opts.sheetKey;
