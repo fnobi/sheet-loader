@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "description": "Google Spreadsheet loader wrapper.",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git://github.com/fnobi/sheet-loader.git"
@@ -14,5 +13,10 @@
   "bugs": {
     "url": "https://github.com/fnobi/sheet-loader/issues"
   },
-  "homepage": "https://github.com/fnobi/sheet-loader"
+  "homepage": "https://github.com/fnobi/sheet-loader",
+  "dependencies": {
+    "async": "0.*",
+    "google-spreadsheet": "0.*",
+    "read": "1.*"
+  }
 }
