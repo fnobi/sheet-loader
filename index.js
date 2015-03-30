@@ -13,7 +13,12 @@ var SheetLoader = function (opts) {
     this.columns = opts.columns || {};
 };
 
-SheetLoader.prototype.load = function (callback) {
+SheetLoader.prototype.load = function (opts, callback) {
+    if (opts instanceof Function && !callback) {
+        callback = opts;
+        opts = {};
+    }
+    opts = opts || {};
     callback = callback || function () {};
 
     var sheetKey = this.sheetKey;
@@ -22,41 +27,47 @@ SheetLoader.prototype.load = function (callback) {
     var googlePassword = this.googlePassword;
     var columns = this.columns;
 
+    var usePrompt = !!opts.usePrompt;
+
     var book, bookInfo, worksheet, rows;
 
     async.series([function validate(next) {
         if (!sheetKey) {
-            callback(new Error('invalid sheet key.'));
+            next(new Error('invalid sheet key.'));
             return;
         }
         if (!sheetTitle) {
-            callback(new Error('invalid sheet title.'));
+            next(new Error('invalid sheet title.'));
             return;
         }
         next();
     }, function setEmail(next) {
         if (googleEmail) {
             next();
-            return;
+        } else if (usePrompt) {
+            read({
+                prompt: 'google email: '
+            }, function (err, result) {
+                googleEmail = result;
+                next(err);
+            });
+        } else {
+            next(new Error('invalid google email.'));
         }
-        read({
-            prompt: 'google email: '
-        }, function (err, result) {
-            googleEmail = result;
-            next(err);
-        });
     }, function setPassword(next) {
         if (googlePassword) {
             next();
-            return;
+        } else if (usePrompt) {
+            read({
+                prompt: 'google password: ',
+                silent: true
+            }, function (err, result) {
+                googlePassword = result;
+                next(err);
+            });
+        } else {
+            next(new Error('invalid google password.'));
         }
-        read({
-            prompt: 'google password: ',
-            silent: true
-        }, function (err, result) {
-            googlePassword = result;
-            next(err);
-        });
     }, function initBook(next) {
         book = new GoogleSpreadsheet(sheetKey);
         next();
