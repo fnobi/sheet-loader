@@ -104,6 +104,7 @@ SheetLoader.prototype.load = function (callback) {
             arr.push(obj);
         });
         rows = arr;
+        next();
     }], function (err) {
         if (err) {
             callback(err);
