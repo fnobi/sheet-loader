@@ -10,6 +10,7 @@ var SheetLoader = function (opts) {
     this.sheetTitle = opts.sheetTitle;
     this.googleEmail = opts.googleEmail;
     this.googlePassword = opts.googlePassword;
+    this.columns = opts.columns || {};
 };
 
 SheetLoader.prototype.load = function (callback) {
@@ -19,6 +20,7 @@ SheetLoader.prototype.load = function (callback) {
     var sheetTitle = this.sheetTitle;
     var googleEmail = this.googleEmail;
     var googlePassword = this.googlePassword;
+    var columns = this.columns;
 
     var book, bookInfo, worksheet, rows;
 
@@ -90,6 +92,18 @@ SheetLoader.prototype.load = function (callback) {
             rows = result;
             next();
         });
+    }, function selectColumns(next) {
+        var arr = [];
+        rows.forEach(function (row) {
+            var obj = {};
+            for (var key in columns) {
+                if (row[columns[key]]) {
+                    obj[key] = row[columns[key]];
+                }
+            }
+            arr.push(obj);
+        });
+        rows = arr;
     }], function (err) {
         if (err) {
             callback(err);
