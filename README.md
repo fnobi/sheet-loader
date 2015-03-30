@@ -3,11 +3,19 @@ sheet-loader
 
 Google Spreadsheet loader wrapper.
 
+## install
+
+```
+npm install sheet-loader
+```
+
 ## usage
 
 ### for node.js script
 
 ```javascript
+var SheetLoader = require('sheet-loader');
+
 var sheetLoader = new SheetLoader({
     googleEmail: 'info@fnobi.com',
     // googlePassword: 'xxxxxxxx',
