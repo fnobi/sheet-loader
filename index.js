@@ -2,14 +2,15 @@ var read = require('read');
 
 var async = require('async');
 var GoogleSpreadsheet = require('google-spreadsheet');
+var googleAuth = require("google-auth-library");
 
 var SheetLoader = function (opts) {
     opts = opts || {};
 
     this.sheetKey = opts.sheetKey;
     this.sheetTitle = opts.sheetTitle;
-    this.googleEmail = opts.googleEmail;
-    this.googlePassword = opts.googlePassword;
+    this.pemFilePath = opts.pemFilePath;
+    this.serviceAccount = opts.serviceAccount;
     this.columns = opts.columns || {};
 };
 
@@ -21,10 +22,10 @@ SheetLoader.prototype.load = function (opts, callback) {
     opts = opts || {};
     callback = callback || function () {};
 
+    var pemFilePath = this.pemFilePath;
+    var serviceAccount = this.serviceAccount;
     var sheetKey = this.sheetKey;
     var sheetTitle = this.sheetTitle;
-    var googleEmail = this.googleEmail;
-    var googlePassword = this.googlePassword;
     var columns = this.columns;
 
     var usePrompt = !!opts.usePrompt;
@@ -41,38 +42,23 @@ SheetLoader.prototype.load = function (opts, callback) {
             return;
         }
         next();
-    }, function setEmail(next) {
-        if (googleEmail) {
-            next();
-        } else if (usePrompt) {
-            read({
-                prompt: 'google email: '
-            }, function (err, result) {
-                googleEmail = result;
-                next(err);
-            });
-        } else {
-            next(new Error('invalid google email.'));
-        }
-    }, function setPassword(next) {
-        if (googlePassword) {
-            next();
-        } else if (usePrompt) {
-            read({
-                prompt: 'google password: ',
-                silent: true
-            }, function (err, result) {
-                googlePassword = result;
-                next(err);
-            });
-        } else {
-            next(new Error('invalid google password.'));
-        }
-    }, function initBook(next) {
-        book = new GoogleSpreadsheet(sheetKey);
-        next();
     }, function startAuth(next) {
-        book.setAuth(googleEmail, googlePassword, next);
+        var authClient = new googleAuth();
+        var jwtClient = new authClient.JWT(
+            serviceAccount, 
+            pemFilePath, 
+            null, 
+            ["https://spreadsheets.google.com/feeds"], 
+            null
+        );
+        jwtClient.authorize(function (err, token) {
+            if (err) {
+                next(err);
+                return;
+            }
+            book = new GoogleSpreadsheet(sheetKey, { "type": token.token_type, "value": token.access_token });
+            next();
+        });
     }, function fetchBookInfo(next) {
         book.getInfo(function (err, result) {
             if (err) {

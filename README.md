@@ -17,10 +17,10 @@ npm install sheet-loader
 var SheetLoader = require('sheet-loader');
 
 var sheetLoader = new SheetLoader({
-    googleEmail: 'info@fnobi.com',
-    // googlePassword: 'xxxxxxxx',
     sheetKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
     sheetTitle: 'sample sheet',
+    pemFilePath: './key.pem',
+    serviceAccount: 'xxxxxxxxxxxxxxx@developer.gserviceaccount.com',
     columns: {
         name: '名前',
         message: '文章',

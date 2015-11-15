@@ -16,6 +16,7 @@
   "homepage": "https://github.com/fnobi/sheet-loader",
   "dependencies": {
     "async": "0.*",
+    "google-auth-library": "0.9.*",
     "google-spreadsheet": "0.*",
     "read": "1.*"
   },
