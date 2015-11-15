@@ -9,7 +9,7 @@ var SheetLoader = function (opts) {
 
     this.sheetKey = opts.sheetKey;
     this.sheetTitle = opts.sheetTitle;
-    this.pemFilePath = opts.pemFilePath;
+    this.keyFilePath = opts.keyFilePath;
     this.serviceAccount = opts.serviceAccount;
     this.columns = opts.columns || {};
 };
@@ -22,7 +22,7 @@ SheetLoader.prototype.load = function (opts, callback) {
     opts = opts || {};
     callback = callback || function () {};
 
-    var pemFilePath = this.pemFilePath;
+    var keyFilePath = this.keyFilePath;
     var serviceAccount = this.serviceAccount;
     var sheetKey = this.sheetKey;
     var sheetTitle = this.sheetTitle;
@@ -46,7 +46,7 @@ SheetLoader.prototype.load = function (opts, callback) {
         var authClient = new googleAuth();
         var jwtClient = new authClient.JWT(
             serviceAccount, 
-            pemFilePath, 
+            keyFilePath, 
             null, 
             ["https://spreadsheets.google.com/feeds"], 
             null

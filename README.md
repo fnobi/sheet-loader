@@ -19,7 +19,7 @@ var SheetLoader = require('sheet-loader');
 var sheetLoader = new SheetLoader({
     sheetKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
     sheetTitle: 'sample sheet',
-    pemFilePath: './key.pem',
+    keyFilePath: './xxxxxxxx-xxxxxxx.json',
     serviceAccount: 'xxxxxxxxxxxxxxx@developer.gserviceaccount.com',
     columns: {
         name: '名前',
