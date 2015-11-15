@@ -18,7 +18,8 @@
     "async": "0.*",
     "google-auth-library": "0.9.*",
     "google-spreadsheet": "0.*",
-    "read": "1.*"
+    "read": "1.*",
+    "underscore": "1.8.*"
   },
   "devDependencies": {
     "grunt-release": "^0.12.0",

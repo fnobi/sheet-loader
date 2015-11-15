@@ -3,6 +3,7 @@ var read = require('read');
 var async = require('async');
 var GoogleSpreadsheet = require('google-spreadsheet');
 var googleAuth = require("google-auth-library");
+var _ = require('underscore');
 
 var SheetLoader = function (opts) {
     opts = opts || {};
@@ -30,7 +31,7 @@ SheetLoader.prototype.load = function (opts, callback) {
 
     var usePrompt = !!opts.usePrompt;
 
-    var book, bookInfo, worksheet, rows;
+    var book, bookInfo, worksheet, rows, labels;
 
     async.series([function validate(next) {
         if (!sheetKey) {
@@ -91,8 +92,15 @@ SheetLoader.prototype.load = function (opts, callback) {
         });
     }, function selectColumns(next) {
         var arr = [];
+        labels = [];
         rows.forEach(function (row) {
             var obj = {};
+            for (var label in row) {
+                if (typeof row[label] == 'string' || typeof row[label] == 'number') {
+                    labels.push(label);
+                }
+            }
+            labels = _.uniq(labels);
             for (var key in columns) {
                 if (row[columns[key]]) {
                     obj[key] = row[columns[key]];
@@ -107,7 +115,7 @@ SheetLoader.prototype.load = function (opts, callback) {
             callback(err);
             return;
         }
-        callback(null, rows);
+        callback(null, rows, labels);
     });    
 };
 
