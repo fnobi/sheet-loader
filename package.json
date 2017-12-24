@@ -15,14 +15,13 @@
   },
   "homepage": "https://github.com/fnobi/sheet-loader",
   "dependencies": {
-    "async": "0.*",
     "google-auth-library": "0.9.*",
     "google-spreadsheet": "0.*",
-    "read": "1.*",
-    "underscore": "1.8.*"
+    "lodash": "^4.17.4",
+    "read": "1.*"
   },
   "devDependencies": {
-    "grunt-release": "^0.12.0",
-    "grunt": "^0.4.5"
+    "grunt": "^0.4.5",
+    "grunt-release": "^0.12.0"
   }
 }
