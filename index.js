@@ -6,25 +6,25 @@ const _ = require('lodash');
 class SheetLoader {
     constructor (opts = {}) {
         this.sheetKey = opts.sheetKey;
-        this.sheetTitle = opts.sheetTitle;
         this.keyFilePath = opts.keyFilePath;
         this.serviceAccount = opts.serviceAccount;
-        this.columns = opts.columns || {};
+
+        this.bookInfo = null;
     }
 
-    load () {
+    loadBookInfo (useCache = true) {
+        if (useCache && this.bookInfo) {
+            return Promise.resolve(this.bookInfo);
+        }
+
         return Promise.resolve().then(() => {
             return new Promise((resolve, reject) => {
                 if (!this.sheetKey) {
                     reject(new Error('invalid sheet key.'));
                     return;
                 }
-                if (!this.sheetTitle) {
-                    reject(new Error('invalid sheet title.'));
-                    return;
-                }
                 resolve();
-            })
+            });
         }).then(() => {
             return new Promise((resolve, reject) => {
                 const authClient = new googleAuth();
@@ -57,15 +57,22 @@ class SheetLoader {
                     resolve(result);
                 });
             });
-        }).then((bookInfo) => {
+        });
+    }
+
+    loadRecords (sheetTitle, columns = {}) {
+        if (!sheetTitle) {
+            return Promise.reject(new Error('invalid sheet title.'));
+        }
+        return this.loadBookInfo().then((bookInfo) => {
             return new Promise((resolve, reject) => {
                 const worksheet = _.find(bookInfo.worksheets, (sheet) => {
-                    return sheet.title === this.sheetTitle;
+                    return sheet.title === sheetTitle;
                 });
                 if (worksheet) {
                     resolve(worksheet);
                 } else {
-                    reject(new Error(`sheet "${this.sheetTitle}" is not found.`));
+                    reject(new Error(`sheet "${sheetTitle}" is not found.`));
                 }
             });
         }).then((worksheet) => {
@@ -81,7 +88,7 @@ class SheetLoader {
         }).then((rows) => {
             return new Promise((resolve, reject) => {
                 const renamed = _.map(rows, (row) => {
-                    return _.mapValues(this.columns, (label, key) => {
+                    return _.mapValues(columns, (label, key) => {
                         return row[label];
                     });
                 });
