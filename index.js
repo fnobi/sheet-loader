@@ -15,13 +15,8 @@ var SheetLoader = function (opts) {
     this.columns = opts.columns || {};
 };
 
-SheetLoader.prototype.load = function (opts, callback) {
-    if (opts instanceof Function && !callback) {
-        callback = opts;
-        opts = {};
-    }
+SheetLoader.prototype.load = function (opts) {
     opts = opts || {};
-    callback = callback || function () {};
 
     var keyFilePath = this.keyFilePath;
     var serviceAccount = this.serviceAccount;
@@ -31,92 +26,99 @@ SheetLoader.prototype.load = function (opts, callback) {
 
     var usePrompt = !!opts.usePrompt;
 
+    // TODO: このへん駆逐したい
     var book, bookInfo, worksheet, rows, labels;
 
-    async.series([function validate(next) {
-        if (!sheetKey) {
-            next(new Error('invalid sheet key.'));
-            return;
-        }
-        if (!sheetTitle) {
-            next(new Error('invalid sheet title.'));
-            return;
-        }
-        next();
-    }, function startAuth(next) {
-        var authClient = new googleAuth();
-        var jwtClient = new authClient.JWT(
-            serviceAccount, 
-            keyFilePath, 
-            null, 
-            ["https://spreadsheets.google.com/feeds"], 
-            null
-        );
-        jwtClient.authorize(function (err, token) {
-            if (err) {
-                next(err);
+    return Promise.resolve().then(() => {
+        return new Promise((resolve, reject) => {
+            if (!sheetKey) {
+                reject(new Error('invalid sheet key.'));
                 return;
             }
-            book = new GoogleSpreadsheet(sheetKey, { "type": token.token_type, "value": token.access_token });
-            next();
-        });
-    }, function fetchBookInfo(next) {
-        book.getInfo(function (err, result) {
-            if (err) {
-                next(err);
+            if (!sheetTitle) {
+                reject(new Error('invalid sheet title.'));
                 return;
             }
-
-            bookInfo = result;
-            next();
-        });
-    }, function selectWorkSheet(next) {
-        bookInfo.worksheets.forEach(function (s) {
-            if (s.title == sheetTitle) {
-                worksheet = s;
-            }
-        });
-        if (!worksheet) {
-            next(new Error('sheet "' + sheetTitle + '" is not found.'));
-            return;
-        }
-        next();
-    }, function fetchRows(next) {
-        worksheet.getRows(function (err, result) {
-            if (err) {
-                next(err);
-                return;
-            }
-            rows = result;
-            next();
-        });
-    }, function selectColumns(next) {
-        var arr = [];
-        labels = [];
-        rows.forEach(function (row) {
-            var obj = {};
-            for (var label in row) {
-                if (typeof row[label] == 'string' || typeof row[label] == 'number') {
-                    labels.push(label);
+            resolve();
+        })
+    }).then(() => {
+        return new Promise((resolve, reject) => {
+            var authClient = new googleAuth();
+            var jwtClient = new authClient.JWT(
+                serviceAccount,
+                keyFilePath,
+                null,
+                ["https://spreadsheets.google.com/feeds"],
+                null
+            );
+            jwtClient.authorize(function (err, token) {
+                if (err) {
+                    reject(err);
+                    return;
                 }
-            }
-            labels = _.uniq(labels);
-            for (var key in columns) {
-                if (row[columns[key]]) {
-                    obj[key] = row[columns[key]];
-                }
-            }
-            arr.push(obj);
+                var book = new GoogleSpreadsheet(sheetKey, {
+                    type: token.token_type,
+                    value: token.access_token
+                });
+                resolve(book);
+            });
         });
-        rows = arr;
-        next();
-    }], function (err) {
-        if (err) {
-            callback(err);
-            return;
-        }
-        callback(null, rows, labels);
-    });    
+    }).then((book) => {
+        return new Promise((resolve, reject) => {
+            book.getInfo(function (err, result) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(result);
+            });
+        });
+    }).then((bookInfo) => {
+        return new Promise((resolve, reject) => {
+            // TODO: lodash#find 使いたい
+            var worksheet;
+            bookInfo.worksheets.forEach(function (s) {
+                if (s.title == sheetTitle) {
+                    worksheet = s;
+                }
+            });
+            if (!worksheet) {
+                reject(new Error('sheet "' + sheetTitle + '" is not found.'));
+                return;
+            }
+            resolve(worksheet);
+        });
+    }).then((worksheet) => {
+        return new Promise((resolve, reject) => {
+            worksheet.getRows(function (err, result) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(result);
+            });
+        });
+    }).then((rows) => {
+        return new Promise((resolve, reject) => {
+            var arr = [], labels = [];
+            rows.forEach(function (row) {
+                var obj = {};
+                for (var label in row) {
+                    if (typeof row[label] == 'string' || typeof row[label] == 'number') {
+                        labels.push(label);
+                    }
+                }
+                labels = _.uniq(labels);
+                for (var key in columns) {
+                    if (row[columns[key]]) {
+                        obj[key] = row[columns[key]];
+                    }
+                }
+                arr.push(obj);
+            });
+            resolve(arr);
+        });
+    });
 };
 
 module.exports = SheetLoader;
