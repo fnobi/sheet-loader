@@ -111,7 +111,7 @@ class SheetLoader {
         });
     }
 
-    exportRecords ({ sheetTitle, columns, dest }) {
+    exportRecords (dest, { sheetTitle, columns }) {
         if (!dest) {
             return Promise.reject(new Error('invalid dest.'));
         }
