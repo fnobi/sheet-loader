@@ -10,6 +10,7 @@ class SheetLoader {
         this.serviceAccount = opts.serviceAccount;
 
         this.bookInfo = null;
+        this.loadBookInfoPromise = null;
     }
 
     loadBookInfo (useCache = true) {
@@ -17,7 +18,11 @@ class SheetLoader {
             return Promise.resolve(this.bookInfo);
         }
 
-        return Promise.resolve().then(() => {
+        if (this.loadBookInfoPromise) {
+            return this.loadBookInfoPromise;
+        }
+
+        this.loadBookInfoPromise = Promise.resolve().then(() => {
             return new Promise((resolve, reject) => {
                 if (!this.sheetKey) {
                     reject(new Error('invalid sheet key.'));
@@ -54,10 +59,14 @@ class SheetLoader {
                         reject(err);
                         return;
                     }
+                    this.bookInfo = result;
                     resolve(result);
+                    this.loadBookInfoPromise = null;
                 });
             });
         });
+
+        return this.loadBookInfoPromise;
     }
 
     loadRows (sheetTitle) {
