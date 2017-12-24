@@ -2,6 +2,7 @@ const read = require('read');
 const GoogleSpreadsheet = require('google-spreadsheet');
 const googleAuth = require('google-auth-library');
 const _ = require('lodash');
+const fs = require('mz/fs');
 
 class SheetLoader {
     constructor (opts = {}) {
@@ -107,6 +108,15 @@ class SheetLoader {
                 });
                 resolve(renamed);
             });
+        });
+    }
+
+    exportRecords ({ sheetTitle, columns, dest }) {
+        if (!dest) {
+            return Promise.reject(new Error('invalid dest.'));
+        }
+        return this.loadRecords({ sheetTitle, columns }).then((records) => {
+            return fs.writeFile(dest, JSON.stringify(records));
         });
     }
 }
