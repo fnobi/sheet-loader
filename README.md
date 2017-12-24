@@ -55,9 +55,8 @@ sheetLoader.loadRows('sample sheet').then((rows) => {
 ### export records to json file
 
 ```javascript
-sheetLoader.exportRecords({
+sheetLoader.exportRecords('./sample.json', {
     sheetTitle: 'sample sheet',
-    dest: './sample.json'
     columns: {
         name: '名前',
         message: '文章',
