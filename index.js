@@ -1,6 +1,5 @@
 var read = require('read');
 
-var async = require('async');
 var GoogleSpreadsheet = require('google-spreadsheet');
 var googleAuth = require("google-auth-library");
 var _ = require('underscore');
@@ -15,27 +14,14 @@ var SheetLoader = function (opts) {
     this.columns = opts.columns || {};
 };
 
-SheetLoader.prototype.load = function (opts) {
-    opts = opts || {};
-
-    var keyFilePath = this.keyFilePath;
-    var serviceAccount = this.serviceAccount;
-    var sheetKey = this.sheetKey;
-    var sheetTitle = this.sheetTitle;
-    var columns = this.columns;
-
-    var usePrompt = !!opts.usePrompt;
-
-    // TODO: このへん駆逐したい
-    var book, bookInfo, worksheet, rows, labels;
-
+SheetLoader.prototype.load = function (opts = {}) {
     return Promise.resolve().then(() => {
         return new Promise((resolve, reject) => {
-            if (!sheetKey) {
+            if (!this.sheetKey) {
                 reject(new Error('invalid sheet key.'));
                 return;
             }
-            if (!sheetTitle) {
+            if (!this.sheetTitle) {
                 reject(new Error('invalid sheet title.'));
                 return;
             }
@@ -45,18 +31,18 @@ SheetLoader.prototype.load = function (opts) {
         return new Promise((resolve, reject) => {
             var authClient = new googleAuth();
             var jwtClient = new authClient.JWT(
-                serviceAccount,
-                keyFilePath,
+                this.serviceAccount,
+                this.keyFilePath,
                 null,
                 ["https://spreadsheets.google.com/feeds"],
                 null
             );
-            jwtClient.authorize(function (err, token) {
+            jwtClient.authorize((err, token) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                var book = new GoogleSpreadsheet(sheetKey, {
+                var book = new GoogleSpreadsheet(this.sheetKey, {
                     type: token.token_type,
                     value: token.access_token
                 });
@@ -77,13 +63,13 @@ SheetLoader.prototype.load = function (opts) {
         return new Promise((resolve, reject) => {
             // TODO: lodash#find 使いたい
             var worksheet;
-            bookInfo.worksheets.forEach(function (s) {
-                if (s.title == sheetTitle) {
+            bookInfo.worksheets.forEach((s) => {
+                if (s.title == this.sheetTitle) {
                     worksheet = s;
                 }
             });
             if (!worksheet) {
-                reject(new Error('sheet "' + sheetTitle + '" is not found.'));
+                reject(new Error('sheet "' + this.sheetTitle + '" is not found.'));
                 return;
             }
             resolve(worksheet);
@@ -100,18 +86,12 @@ SheetLoader.prototype.load = function (opts) {
         });
     }).then((rows) => {
         return new Promise((resolve, reject) => {
-            var arr = [], labels = [];
-            rows.forEach(function (row) {
+            var arr = [];
+            rows.forEach((row) => {
                 var obj = {};
-                for (var label in row) {
-                    if (typeof row[label] == 'string' || typeof row[label] == 'number') {
-                        labels.push(label);
-                    }
-                }
-                labels = _.uniq(labels);
-                for (var key in columns) {
-                    if (row[columns[key]]) {
-                        obj[key] = row[columns[key]];
+                for (var key in this.columns) {
+                    if (row[this.columns[key]]) {
+                        obj[key] = row[this.columns[key]];
                     }
                 }
                 arr.push(obj);
