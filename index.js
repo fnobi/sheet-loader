@@ -60,7 +60,7 @@ class SheetLoader {
         });
     }
 
-    loadRecords (sheetTitle, columns = {}) {
+    loadRows (sheetTitle) {
         if (!sheetTitle) {
             return Promise.reject(new Error('invalid sheet title.'));
         }
@@ -85,7 +85,11 @@ class SheetLoader {
                     resolve(result);
                 });
             });
-        }).then((rows) => {
+        });
+    }
+
+    loadRecords (sheetTitle, columns = {}) {
+        return this.loadRows(sheetTitle).then((rows) => {
             return new Promise((resolve, reject) => {
                 const renamed = _.map(rows, (row) => {
                     return _.mapValues(columns, (label, key) => {
