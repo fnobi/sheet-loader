@@ -1,7 +1,7 @@
-var read = require('read');
-var GoogleSpreadsheet = require('google-spreadsheet');
-var googleAuth = require("google-auth-library");
-var _ = require('lodash');
+const read = require('read');
+const GoogleSpreadsheet = require('google-spreadsheet');
+const googleAuth = require('google-auth-library');
+const _ = require('lodash');
 
 class SheetLoader {
     constructor (opts = {}) {
@@ -27,12 +27,12 @@ class SheetLoader {
             })
         }).then(() => {
             return new Promise((resolve, reject) => {
-                var authClient = new googleAuth();
-                var jwtClient = new authClient.JWT(
+                const authClient = new googleAuth();
+                const jwtClient = new authClient.JWT(
                     this.serviceAccount,
                     this.keyFilePath,
                     null,
-                    ["https://spreadsheets.google.com/feeds"],
+                    ['https://spreadsheets.google.com/feeds'],
                     null
                 );
                 jwtClient.authorize((err, token) => {
@@ -40,7 +40,7 @@ class SheetLoader {
                         reject(err);
                         return;
                     }
-                    var book = new GoogleSpreadsheet(this.sheetKey, {
+                    const book = new GoogleSpreadsheet(this.sheetKey, {
                         type: token.token_type,
                         value: token.access_token
                     });
@@ -49,7 +49,7 @@ class SheetLoader {
             });
         }).then((book) => {
             return new Promise((resolve, reject) => {
-                book.getInfo(function (err, result) {
+                book.getInfo((err, result) => {
                     if (err) {
                         reject(err);
                         return;
@@ -59,22 +59,18 @@ class SheetLoader {
             });
         }).then((bookInfo) => {
             return new Promise((resolve, reject) => {
-                // TODO: lodash#find 使いたい
-                var worksheet;
-                bookInfo.worksheets.forEach((s) => {
-                    if (s.title == this.sheetTitle) {
-                        worksheet = s;
-                    }
+                const worksheet = _.find(bookInfo.worksheets, (sheet) => {
+                    return sheet.title === this.sheetTitle;
                 });
-                if (!worksheet) {
-                    reject(new Error('sheet "' + this.sheetTitle + '" is not found.'));
-                    return;
+                if (worksheet) {
+                    resolve(worksheet);
+                } else {
+                    reject(new Error(`sheet "${this.sheetTitle}" is not found.`));
                 }
-                resolve(worksheet);
             });
         }).then((worksheet) => {
             return new Promise((resolve, reject) => {
-                worksheet.getRows(function (err, result) {
+                worksheet.getRows((err, result) => {
                     if (err) {
                         reject(err);
                         return;
@@ -84,17 +80,12 @@ class SheetLoader {
             });
         }).then((rows) => {
             return new Promise((resolve, reject) => {
-                var arr = [];
-                rows.forEach((row) => {
-                    var obj = {};
-                    for (var key in this.columns) {
-                        if (row[this.columns[key]]) {
-                            obj[key] = row[this.columns[key]];
-                        }
-                    }
-                    arr.push(obj);
+                const renamed = _.map(rows, (row) => {
+                    return _.mapValues(this.columns, (label, key) => {
+                        return row[label];
+                    });
                 });
-                resolve(arr);
+                resolve(renamed);
             });
         });
     }
