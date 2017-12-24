@@ -19,9 +19,5 @@
     "google-spreadsheet": "0.*",
     "lodash": "^4.17.4",
     "read": "1.*"
-  },
-  "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-release": "^0.12.0"
   }
 }
