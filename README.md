@@ -11,16 +11,23 @@ npm install sheet-loader
 
 ## usage
 
-### for node.js script
+### initialize
 
 ```javascript
-var SheetLoader = require('sheet-loader');
+const SheetLoader = require('sheet-loader');
 
-var sheetLoader = new SheetLoader({
+const sheetLoader = new SheetLoader({
     sheetKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-    sheetTitle: 'sample sheet',
     keyFilePath: './xxxxxxxx-xxxxxxx.json',
-    serviceAccount: 'xxxxxxxxxxxxxxx@developer.gserviceaccount.com',
+    serviceAccount: 'xxxxxxxxxxxxxxx@developer.gserviceaccount.com'
+});
+```
+
+### load data with column scheme
+
+```javascript
+sheetLoader.loadRecords({
+    sheetTitle: 'sample sheet',
     columns: {
         name: '名前',
         message: '文章',
@@ -28,22 +35,36 @@ var sheetLoader = new SheetLoader({
         month: '月',
         date: '日'
     }
-});
-
-sheetLoader.load({
-    // show prompt for google email & password on running script.
-    usePrompt: true
-}, function (err, rows) {
-    if (err) {
-        console.error(err.toString());
-        return;
-    }
-
-    rows.forEach(function (row, index) {
+}).then((records) => {
+    records.forEach(function (row, index) {
         console.log('========================');
         console.log('name:\t' + row.name);
         console.log('birth day:\t' + [row.year, row.month, row.date].join('.');
     });
 });
+```
 
+### load raw sheet data
+
+```javascript
+sheetLoader.loadRows('sample sheet').then((rows) => {
+    console.log(rows);
+});
+```
+
+### export records to json file
+
+```javascript
+sheetLoader.exportRecords('./sample.json', {
+    sheetTitle: 'sample sheet',
+    columns: {
+        name: '名前',
+        message: '文章',
+        year: '年',
+        month: '月',
+        date: '日'
+    }
+}).then(() => {
+    console.log('done.');
+});
 ```
