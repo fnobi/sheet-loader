@@ -97,7 +97,7 @@ class SheetLoader {
         });
     }
 
-    loadRecords (sheetTitle, columns = {}) {
+    loadRecords ({ sheetTitle, columns = {} }) {
         return this.loadRows(sheetTitle).then((rows) => {
             return new Promise((resolve, reject) => {
                 const renamed = _.map(rows, (row) => {
