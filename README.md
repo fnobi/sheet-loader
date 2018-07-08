@@ -18,8 +18,7 @@ const SheetLoader = require('sheet-loader');
 
 const sheetLoader = new SheetLoader({
     sheetKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-    keyFilePath: './xxxxxxxx-xxxxxxx.json',
-    serviceAccount: 'xxxxxxxxxxxxxxx@developer.gserviceaccount.com'
+    keyFilePath: './xxxxxxxx-xxxxxxx.json'
 });
 ```
 
@@ -66,5 +65,17 @@ sheetLoader.exportRecords('./sample.json', {
     }
 }).then(() => {
     console.log('done.');
+});
+```
+
+### auth with raw credentials
+
+```javascript
+const sheetLoader = new SheetLoader({
+    sheetKey: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    credentials: {
+        client_email: 'xxxxxxxxxxxxxxx@developer.gserviceaccount.com',
+        private_key: 'XXXXXXXXXXXXXXX'
+    },
 });
 ```
