@@ -7,6 +7,7 @@ class SheetLoader {
     constructor (opts = {}) {
         this.sheetKey = opts.sheetKey;
         this.keyFilePath = opts.keyFilePath;
+        this.creds = opts.creds;
 
         this.bookInfo = null;
         this.loadBookInfoPromise = null;
@@ -30,13 +31,14 @@ class SheetLoader {
                 resolve();
             });
         }).then(() => {
+            if (this.creds) return this.creds;
             return fs.readFile(this.keyFilePath, 'utf8').then((body) => {
                 return JSON.parse(body);
             });
         }).then((creds) => {
             return new Promise((resolve, reject) => {
                 const book = new GoogleSpreadsheet(this.sheetKey);
-                book.useServiceAccountAuth(creds, (e) => {
+                book.useServiceAccountAuth(creds, (err) => {
                     if (err) return reject(err);
                     resolve(book);
                 });
