@@ -1,6 +1,5 @@
 const read = require('read');
 const GoogleSpreadsheet = require('google-spreadsheet');
-const googleAuth = require('google-auth-library');
 const _ = require('lodash');
 const fs = require('mz/fs');
 
@@ -8,7 +7,6 @@ class SheetLoader {
     constructor (opts = {}) {
         this.sheetKey = opts.sheetKey;
         this.keyFilePath = opts.keyFilePath;
-        this.serviceAccount = opts.serviceAccount;
 
         this.bookInfo = null;
         this.loadBookInfoPromise = null;
@@ -32,24 +30,14 @@ class SheetLoader {
                 resolve();
             });
         }).then(() => {
+            return fs.readFile(this.keyFilePath, 'utf8').then((body) => {
+                return JSON.parse(body);
+            });
+        }).then((creds) => {
             return new Promise((resolve, reject) => {
-                const authClient = new googleAuth();
-                const jwtClient = new authClient.JWT(
-                    this.serviceAccount,
-                    this.keyFilePath,
-                    null,
-                    ['https://spreadsheets.google.com/feeds'],
-                    null
-                );
-                jwtClient.authorize((err, token) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    const book = new GoogleSpreadsheet(this.sheetKey, {
-                        type: token.token_type,
-                        value: token.access_token
-                    });
+                const book = new GoogleSpreadsheet(this.sheetKey);
+                book.useServiceAccountAuth(creds, (e) => {
+                    if (err) return reject(err);
                     resolve(book);
                 });
             });
