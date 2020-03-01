@@ -15,7 +15,7 @@
   },
   "homepage": "https://github.com/fnobi/sheet-loader",
   "dependencies": {
-    "google-spreadsheet": "^2.0.9",
+    "google-spreadsheet": "^3.0.9",
     "lodash": "^4.17.15",
     "mz": "^2.7.0",
     "read": "1.*"

@@ -1,5 +1,5 @@
 const read = require('read');
-const GoogleSpreadsheet = require('google-spreadsheet');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
 const _ = require('lodash');
 const fs = require('mz/fs');
 
