@@ -36,22 +36,13 @@ class SheetLoader {
                 return JSON.parse(body);
             });
         }).then((credentials) => {
-            return new Promise((resolve, reject) => {
-                const book = new GoogleSpreadsheet(this.sheetKey);
-                book.useServiceAccountAuth(credentials, (err) => {
-                    if (err) return reject(err);
-                    resolve(book);
-                });
-            });
+            const book = new GoogleSpreadsheet(this.sheetKey);
+            return book.useServiceAccountAuth(credentials).then(() => book);
         }).then((book) => {
             return new Promise((resolve, reject) => {
-                book.getInfo((err, result) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    this.bookInfo = result;
-                    resolve(result);
+                book.getInfo().then(() => {
+                    this.bookInfo = book;
+                    resolve(book);
                     this.loadBookInfoPromise = null;
                 });
             });
@@ -66,7 +57,7 @@ class SheetLoader {
         }
         return this.loadBookInfo().then((bookInfo) => {
             return new Promise((resolve, reject) => {
-                const worksheet = _.find(bookInfo.worksheets, (sheet) => {
+                const worksheet = _.find(bookInfo.sheetsByIndex, (sheet) => {
                     return sheet.title === sheetTitle;
                 });
                 if (worksheet) {
@@ -75,17 +66,7 @@ class SheetLoader {
                     reject(new Error(`sheet "${sheetTitle}" is not found.`));
                 }
             });
-        }).then((worksheet) => {
-            return new Promise((resolve, reject) => {
-                worksheet.getRows((err, result) => {
-                    if (err) {
-                        reject(err);
-                        return;
-                    }
-                    resolve(result);
-                });
-            });
-        });
+        }).then((worksheet) => worksheet.getRows());
     }
 
     loadRecords ({ sheetTitle, columns = {} }) {
