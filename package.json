@@ -1,6 +1,6 @@
 {
   "name": "sheet-loader",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "Google Spreadsheet loader wrapper.",
   "main": "index.js",
   "scripts": {},
