@@ -4,6 +4,9 @@
   "description": "Google Spreadsheet loader wrapper.",
   "main": "index.js",
   "scripts": {},
+  "engines": {
+    "node": ">=12"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/fnobi/sheet-loader.git"
@@ -15,9 +18,6 @@
   },
   "homepage": "https://github.com/fnobi/sheet-loader",
   "dependencies": {
-    "google-spreadsheet": "^4.1.1",
-    "lodash": "^4.17.19",
-    "mz": "^2.7.0",
-    "read": "1.*"
+    "google-spreadsheet": "^4.1.1"
   }
 }
