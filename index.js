@@ -1,4 +1,5 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { JWT } = require('google-auth-library');
 const fs = require('fs').promises;
 
 class SheetLoader {
@@ -34,11 +35,15 @@ class SheetLoader {
                 return JSON.parse(body);
             });
         }).then((credentials) => {
-            const book = new GoogleSpreadsheet(this.sheetKey);
-            return book.useServiceAccountAuth(credentials).then(() => book);
+            const auth = new JWT({
+                email: credentials.client_email,
+                key: credentials.private_key,
+                scopes: ['https://www.googleapis.com/auth/spreadsheets']
+            });
+            return new GoogleSpreadsheet(this.sheetKey, auth);
         }).then((book) => {
             return new Promise((resolve, reject) => {
-                book.getInfo().then(() => {
+                book.loadInfo().then(() => {
                     this.bookInfo = book;
                     resolve(book);
                     this.loadBookInfoPromise = null;
@@ -72,7 +77,7 @@ class SheetLoader {
             return new Promise((resolve, reject) => {
                 const renamed = rows.map((row) => {
                     return Object.fromEntries(
-                        Object.entries(columns).map(([key, label]) => [key, row[label]])
+                        Object.entries(columns).map(([key, label]) => [key, row.get(label)])
                     );
                 });
                 resolve(renamed);
