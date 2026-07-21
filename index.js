@@ -1,7 +1,5 @@
-const read = require('read');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const _ = require('lodash');
-const fs = require('mz/fs');
+const fs = require('fs').promises;
 
 class SheetLoader {
     constructor (opts = {}) {
@@ -57,7 +55,7 @@ class SheetLoader {
         }
         return this.loadBookInfo().then((bookInfo) => {
             return new Promise((resolve, reject) => {
-                const worksheet = _.find(bookInfo.sheetsByIndex, (sheet) => {
+                const worksheet = bookInfo.sheetsByIndex.find((sheet) => {
                     return sheet.title === sheetTitle;
                 });
                 if (worksheet) {
@@ -72,10 +70,10 @@ class SheetLoader {
     loadRecords ({ sheetTitle, columns = {} }) {
         return this.loadRows(sheetTitle).then((rows) => {
             return new Promise((resolve, reject) => {
-                const renamed = _.map(rows, (row) => {
-                    return _.mapValues(columns, (label, key) => {
-                        return row[label];
-                    });
+                const renamed = rows.map((row) => {
+                    return Object.fromEntries(
+                        Object.entries(columns).map(([key, label]) => [key, row[label]])
+                    );
                 });
                 resolve(renamed);
             });
